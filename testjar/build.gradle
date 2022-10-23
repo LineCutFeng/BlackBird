@@ -1,0 +1,30 @@
+plugins {
+    id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+}
+
+//将jar转为dex，依赖copyJar任务完成
+task makeDex(type : Exec){
+
+    println("hello!")
+    def a1, a2
+    //注意要判断gradle运行在哪个操作系统，使用对应的控制台命令执行dx
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        a1 = 'cmd'
+        a2 = '/c'
+    } else {
+        a1 = 'sh'
+        a2 = '-c'
+    }
+    def list = []
+    list.add(a1)
+    list.add(a2)
+    list.add("$projectDir/dxTool/dx --dex --output=ccc.dex $projectDir/build/lib/test.jar")
+    println(list.toString())
+    commandLine list
+}

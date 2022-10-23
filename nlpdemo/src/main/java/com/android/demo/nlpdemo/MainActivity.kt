@@ -4,17 +4,17 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.hankcs.hanlp.HanLP
 import com.hankcs.hanlp.seg.common.Term
-import jackmego.com.jieba_android.JiebaSegmenter
+import dalvik.system.DexClassLoader
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     val path = App.application.filesDir.absolutePath + File.separator + "messagefiles"
 
-    val decoderList: ArrayList<DecoderBean> = ArrayList()
+    val decodeResultList: ArrayList<DecoderBean> = ArrayList()
 
     lateinit var rv_decode: RecyclerView
 
@@ -34,63 +34,68 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         rv_decode = findViewById(R.id.rv_cmcc)
 
-        mHandler.postDelayed(
-            {
-                makeSureDir(this)
+        makeSureDir(this)
 
-                decoder = CsvDecoder()
-                decoder.setFilePath(path + File.separator + "cmcc.csv")
-                val decodeLines = decoder.decodeLines(500)
-                decodeLines.forEach { decoderList.add(DecoderBean(it, null)) }
+        val optimizedDexOutputPath = App.application.cacheDir
+        val methodLoadFile = File(App.application.cacheDir.absolutePath + File.separator + "testjar.jar")
+        val classLoader = DexClassLoader(methodLoadFile.absolutePath, optimizedDexOutputPath.absolutePath, null, classLoader)
 
-                decoderList.forEach {
+        val decoderClass = classLoader.loadClass("com.example.testjar.Decode")
+        val getResMethod = decoderClass.getDeclaredMethod("getRes")
+        var invoke: String? = getResMethod.invoke(null) as String?
 
-                    val segment: List<Term?> = HanLP.segment(it.smsContent)
+        Toast.makeText(this, invoke, Toast.LENGTH_SHORT).show()
+
+        decoder = CsvDecoder()
+
+        decoder.setFilePath(path + File.separator + "ct.csv")
+
+        decoder.decodeLines(500).forEach { decodeResultList.add(DecoderBean(it, null)) }
+
+        decodeResultList.forEach {
+
+            val segment: List<Term?> = HanLP.segment(it.smsContent)
 //                    val dividedString = JiebaSegmenter.getJiebaSegmenterSingleton().getDividedString(it.smsContent)
 
-                    var decorderResult: String? = null
+            var decorderResult: String? = null
 
-                    for (termWithIndex in segment.withIndex()) {
-                        if (termWithIndex.value?.nature?.toString() == "m") {       //数量词 m
-                            var indexTmp = termWithIndex.index - 1
-                            var finded = false;
-                            while (indexTmp > 0) {
-                                if (segment[indexTmp]?.nature.toString() == "w") {      //标点符号
-                                    indexTmp--
-                                } else if (segment[indexTmp]?.nature.toString() == "p" && segment[indexTmp]?.word in arrayOf("是", "为")) {
-                                    indexTmp--
-                                } else if (segment[indexTmp]?.nature.toString() == "n" && segment[indexTmp]?.word in arrayOf("余额", "欠费", "结余")) {        //余额 名词n
-                                    finded = true
-                                    break
-                                } else if (segment[indexTmp]?.nature.toString() == "n" && segment[indexTmp]?.word in arrayOf("剩余")) {
-                                    if (indexTmp - 1 > 0 && segment[indexTmp - 1]?.nature.toString() == "n" && segment[indexTmp - 1]?.word.toString() == "话费") {
-                                        finded = true
-                                        break
-                                    } else {
-                                        break
-                                    }
-                                } else {
-                                    break
-                                }
+            for (termWithIndex in segment.withIndex()) {
+                if (termWithIndex.value?.nature?.toString() == "m") {       //数量词 m
+                    var indexTmp = termWithIndex.index - 1
+                    var finded = false;
+                    while (indexTmp > 0) {
+                        if (segment[indexTmp]?.nature.toString() == "w") {      //标点符号
+                            indexTmp--
+                        } else if (segment[indexTmp]?.nature.toString() == "p" && segment[indexTmp]?.word in arrayOf("是", "为")) {
+                            indexTmp--
+                        } else if (segment[indexTmp]?.nature.toString() == "n" && segment[indexTmp]?.word in arrayOf("余额", "欠费", "结余")) {        //余额 名词n
+                            finded = true
+                            break
+                        } else if (segment[indexTmp]?.nature.toString() == "n" && segment[indexTmp]?.word in arrayOf("剩余")) {
+                            if (indexTmp - 1 > 0 && segment[indexTmp - 1]?.nature.toString() == "n" && segment[indexTmp - 1]?.word.toString() == "话费") {
+                                finded = true
+                                break
+                            } else {
+                                break
                             }
-                            if (finded) {
-                                if (termWithIndex.index + 1 < segment.size && segment[termWithIndex.index + 1]?.nature?.toString() == "q" && segment[termWithIndex.index + 1]?.word in arrayOf("元", "块")) {      //单位q
-                                    decorderResult = termWithIndex.value?.word + segment[termWithIndex.index + 1]?.word
-                                    break;
-                                }
-                            }
+                        } else {
+                            break
                         }
                     }
-
-                    it.decoderRes = decorderResult
+                    if (finded) {
+                        if (termWithIndex.index + 1 < segment.size && segment[termWithIndex.index + 1]?.nature?.toString() == "q" && segment[termWithIndex.index + 1]?.word in arrayOf("元", "块")) {      //单位q
+                            decorderResult = termWithIndex.value?.word + segment[termWithIndex.index + 1]?.word
+                            break;
+                        }
+                    }
                 }
+            }
 
-                rv_decode.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-                rv_decode.adapter = SmsDecodeContentAdapter(this, decoderList)
+            it.decoderRes = decorderResult
+        }
 
-            }, 0L
-        )
-
+        rv_decode.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        rv_decode.adapter = SmsDecodeContentAdapter(this, decodeResultList)
 
 //        val textView = findViewById<TextView>(R.id.tv)
 //        var segment : List<Term>
@@ -100,26 +105,40 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun makeSureDir(context: Context) {
-        thread {
-            val messagePath = File(path)
-            if (messagePath.isFile) {
-                messagePath.delete()
-            }
-            if (!messagePath.exists()) {
-                messagePath.mkdirs()
-            }
-            val buffer = ByteArray(5 * 1024)
+        val messagePath = File(path)
+        if (messagePath.isFile) {
+            messagePath.delete()
+        }
+        if (!messagePath.exists()) {
+            messagePath.mkdirs()
+        }
 
-            this.assets.list("messagefiles")?.forEach {
-                val tmpFile = File(path + File.separator + it)
-                if (!tmpFile.exists()) {
-                    val input = BufferedInputStream(this.assets.open("messagefiles/${it}"))
-                    val output = BufferedOutputStream(FileOutputStream("${path}/${it}"))
-                    while (input.read(buffer) > 0) {
-                        output.write(buffer)
-                    }
+        this.assets.list("messagefiles")?.forEach {
+
+            val buffer = ByteArray(5 * 1024)
+            val tmpFile = File(path + File.separator + it)
+            if (!tmpFile.exists()) {
+                val input = BufferedInputStream(this.assets.open("messagefiles/${it}"))
+                val output = BufferedOutputStream(FileOutputStream("${path}/${it}"))
+                while (input.read(buffer) > 0) {
+                    output.write(buffer)
                 }
+                output.flush()
             }
         }
+        val input = this.assets.open("testjar.jar")
+        val output = FileOutputStream(App.application.cacheDir.absolutePath + File.separator + "testjar.jar")
+        val buffer = ByteArray(5 * 1024)
+        try {
+            while (input.read(buffer) >= 0) {
+                output.write(buffer)
+            }
+        } catch (e: Exception) {
+        } finally {
+            output.flush()
+            output.close()
+            input.close()
+        }
+
     }
 }

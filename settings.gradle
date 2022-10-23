@@ -17,3 +17,4 @@ rootProject.name = "BlackBird"
 //include ':peccatagreed'
 include ':nlpdemo'
 include ':jieba_android'
+include ':testjar'

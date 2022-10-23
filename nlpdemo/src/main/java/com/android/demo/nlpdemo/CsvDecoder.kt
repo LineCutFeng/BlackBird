@@ -5,7 +5,7 @@ import java.io.File
 import java.io.FileReader
 import java.lang.Exception
 
-public class CsvDecoder() : DecoderInterface {
+class CsvDecoder() : DecoderInterface {
 
     private var file: File? = null
     var bufferedReader : BufferedReader? = null
@@ -16,13 +16,16 @@ public class CsvDecoder() : DecoderInterface {
         bufferedReader = BufferedReader(FileReader(file))
     }
 
-    override fun decodeLines(/*lineNumber: Int, */readLineSize: Int): List<String> {
+    override fun decodeLines(readLineSize: Int): List<String> {
 
         val res = mutableListOf<String>()
 
         while (res.size < readLineSize) {
             try {
-                res.add(bufferedReader!!.readLine())
+                val tmpLine = bufferedReader?.readLine()
+
+                if (tmpLine == null) return res;
+                else res.add(tmpLine)
             } catch (e : Exception) {
                 return res
             }
