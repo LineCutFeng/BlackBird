@@ -3,70 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-<!--    <TextView-->
-<!--        android:id="@+id/tv"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"/>-->
-
-    <RadioGroup
-        android:id="@+id/rg_operate_select"
-        android:layout_width="match_parent"
+    <Button
+        android:onClick="action_preview"
+        android:id="@+id/bt_preview2"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:checkedButton="@id/cmcc"
-        android:orientation="horizontal"
+        android:layout_marginTop="248dp"
+        android:text="预览模式"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <RadioButton
-            android:id="@+id/cmcc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="中国移动" />
-
-        <RadioButton
-            android:id="@+id/cu"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="中国联通" />
-
-        <RadioButton
-            android:id="@+id/ct"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="中国电信" />
-
-    </RadioGroup>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_cmcc"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <Button
+        android:onClick="action_custom"
+        android:id="@+id/bt_custom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
+        android:text="自定义模式"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rg_operate_select" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_cu"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rg_operate_select" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_ct"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rg_operate_select" />
+        app:layout_constraintTop_toBottomOf="@+id/bt_preview2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

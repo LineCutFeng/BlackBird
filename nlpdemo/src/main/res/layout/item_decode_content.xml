@@ -2,22 +2,35 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cv_root_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:contentPadding="10dp">
+    android:layout_margin="5dp"
+    app:cardBackgroundColor="#F1FDF1"
+    app:cardCornerRadius="15dp"
+    app:contentPadding="13dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_gravity="center_vertical">
 
+        <TextView
+            android:id="@+id/tv_no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:textSize="25sp"
+            tools:text="1." />
 
         <TextView
             android:id="@+id/tv_content"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="3"
             android:textColor="#FF5722"
+            android:textIsSelectable="true"
             tools:text="当前话费为13.9元，请及时进行充值" />
 
         <TextView
